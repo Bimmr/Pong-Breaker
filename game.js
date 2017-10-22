@@ -19,8 +19,8 @@ function setup() {
 
 function draw() {
 
-    translate(width, height);
-    rotate(PI);
+    //translate(width, height);
+    //rotate(PI);
 
     background(150);
     stroke("#fff");
