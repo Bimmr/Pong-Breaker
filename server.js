@@ -37,7 +37,7 @@ setInterval(function () {
         ball: game.ball
     });
     playerTwo.emit('game join', {
-        name: playerTwo.playerName,
+        name: playerOne.playerName,
         ball: game.ball
     });
 
@@ -45,20 +45,24 @@ setInterval(function () {
 
 setInterval(function(){
     var updatedGames = {};
-    for(var i = 0; i < io.sockets.length; i++){
-        var s = io.sockets[i];
-        if(!updatedGames[s.game.player1.id])
-        {
-            s.game.update();
-            io.to("Game"+s.game.id).emit('game update', {
-                player1: s.game.player1,
-                player2: s.game.player2,
-                ball: s.game.ball
-            });
-            updatedGames[s.game.player1.id] = true;
+    Object.keys(io.sockets.sockets).forEach(function(id) {
+        var s = io.sockets.sockets[id];
+        if(s.game) {
+            if (!updatedGames[s.game.player1.id]) {
+                s.game.update();
+                s.game.player1.emit('game update', {
+                    otherPaddle: s.game.player2.paddle,
+                    ball: s.game.ballPos
+                });
+                s.game.player2.emit('game update', {
+                    otherPaddle: s.game.player1.paddle,
+                    ball: {x:s.game.ballPos.x, y: s.game.ballPos.y*-1}
+                });
+                updatedGames[s.game.player1.id] = true;
+            }
         }
-    }
-},1000/30);
+    });
+},20);
 
 io.sockets.on('connection', function (socket) {
 
@@ -69,73 +73,51 @@ io.sockets.on('connection', function (socket) {
     });
     socket.on("queue leave", function (data) {
         var index = waitingQueue.indexOf(socket);
-        if (index != -1)
+        if (index !== -1)
             waitingQueue.splice(index, 1);
     });
     socket.on('paddle update', function (data) {
         socket.paddle = data;
-        console.log(data);
     });
 });
 
+var ballSize = 15;
 function Game(id, player1, player2){
     this.id = id;
-    this.ball = new Ball((500/2)-ballSize/2, (750/2)-ballSize/2);
-    this.ball.move(Math.floor(Math.random() * 2) - 1, Math.floor(Math.random() * 2) - 1);
-
     this.player1 = player1;
     this.player2 = player2;
 
-    this.update = function(){
-        this.player1.emit('game update',{
-            otherPaddle: player2.paddlePos,
-            ball: this.ball.pos
-        });
-        this.player2.emit('game update',{
-            otherPaddle: player2.paddlePos,
-            ball: this.ball.pos
-        });
+    this.ballVel = {x: 0, y: 0};
+    this.ballPos = {x: (500/2)-ballSize/2, y: (750/2)-ballSize/2};
+    this.ballLastPos = {x: 0, y: 0};
+    this.ballSpeed = 5;
+
+
+    this.moveBall = function(x,y){
+        this.ballVel.x += x * this.ballSpeed;
+        this.ballVel.y += y * this.ballSpeed;
     }
-}
-var ballSize = 15;
 
-function Ball(x, y) {
-    this.vel = {x: 0, y: 0};
-    this.pos = {x: x, y: y};
-    this.speed = 5;
-    this.lastPos = {x: 0, y: 0};
-    this.dead = false;
+    this.moveBall(Math.floor(Math.random() * 2) - 1, Math.floor(Math.random() * 2) - 1);
 
-    this.move = function (x, y) {
-        this.vel.x += x * this.speed;
-        this.vel.y += y * this.speed;
+
+    this.update = function(){
+
+        this.ballPos.x += this.ballVel.x;
+        this.ballPos.y += this.ballVel.y;
+
+        //Check for Left collision
+        if (this.ballPos.x <= 0)
+            this.move(1, 0);
+
+        //Check for Right collision
+        if (this.ballPos.x + ballSize >= width)
+            this.move(-1, 0);
+
+        this.ballLastPos.x = this.ballPos.x;
+        this.ballLastPos.y = this.ballPos.y;
     };
 
-    this.draw = function () {
-        stroke("#717171");
-        fill("#fff");
-        ellipse(this.pos.x, this.pos.y, ballSize, ballSize);
-    };
 
-    this.update = function () {
-        if (!this.dead) {
-            this.pos.add(this.vel);
-
-
-            this.pos.x += this.vel.x;
-            this.pos.y += this.vel.y;
-
-            //Check for Left collision
-            if (this.pos.x <= 0)
-                this.move(1, 0);
-
-            //Check for Right collision
-            if (this.pos.x + ballSize >= width)
-                this.move(-1, 0);
-
-            this.lastPos.x = this.pos.x;
-            this.lastPos.y = this.pos.y;
-        }
-    };
 
 }

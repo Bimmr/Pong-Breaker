@@ -1,13 +1,13 @@
 var paddle;
+var otherPaddle = {};
 var ballSize = 15;
-var ballPos;
+var ballPos = {};
 var socket;
 
 function setup() {
 
     var canvas = createCanvas(500, 750);
 
-    // Move the canvas so it's inside our <div id="sketch-holder">.
     canvas.parent('sketch-holder');
     $("#wrapper").draggable();
 
@@ -25,19 +25,21 @@ function setup() {
         start.show();
     });
 
-    socket.on('game update', function (data) {
-        ballPos = data;
-    });
-
     socket.on('game join', function (data) {
         waiting.hide();
         start.hide();
         game.show();
         paddle = new Paddle(width / 2 - (paddleWidth / 2), height - paddleHeight - 3);
         $("#status").text("Playing with " + data.name);
+        ballPos.x = data.x;
+        ballPos.y = data.y;
     });
 
     socket.on('game update', function (data) {
+        otherPaddle.x = data.otherPaddle.x;
+        otherPaddle.y = data.otherPaddle.y;
+        ballPos.x = data.ball.x;
+        ballPos.y = data.ball.y;
         console.log(data);
     });
 
@@ -70,13 +72,24 @@ function draw() {
     stroke("#fff");
     line(0, height / 2, width, height / 2);
 
-    paddle.update();
-    paddle.draw();
-    socket.emit('paddle update', {x: paddle.x, y: paddle.y});
+    if(paddle) {
+        paddle.update();
+        paddle.draw();
+        socket.emit('paddle update', {
+            x: paddle.pos.x,
+            y: paddle.pos.y
+        });
+
+    }
     if (ballPos) {
         stroke("#717171");
         fill("#fff");
         ellipse(ballPos.x, ballPos.y, ballSize, ballSize);
+    }
+    if(otherPaddle){
+        stroke("#434343");
+        fill("#ff7640");
+        rect(otherPaddle.x, height-otherPaddle.y-paddleHeight, paddleWidth, paddleHeight);
     }
 }
 

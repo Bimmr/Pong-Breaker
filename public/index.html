@@ -1,11 +1,14 @@
 <html>
 <head>
     <script src="Library/jquery/jquery.min.js"></script>
+    <script src="Library/jquery/jquery-ui.min.js"></script>
     <script src="https://cdn.socket.io/socket.io-1.7.3.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="Library/p5/p5.min.js"></script>
     <script src="start.js"></script>
+    <script src="Paddle.js"></script>
     <style>
 
         body {
@@ -16,8 +19,8 @@
             justify-content: center;
         }
 
-        #wrapper {
-            width: 500px;
+        #wrapper{
+            width: 550px;
             height: auto;
             border: 1px solid #CCC;
             border-radius: 5px;
@@ -40,9 +43,7 @@
             min-width: 100px;
         }
 
-    </style>
-    <style>
-        #waiting {
+        #waiting, #game {
             display: none;
         }
 
