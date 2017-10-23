@@ -1,0 +1,90 @@
+<html>
+<head>
+    <script src="Library/jquery/jquery.min.js"></script>
+    <script src="https://cdn.socket.io/socket.io-1.7.3.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="start.js"></script>
+    <style>
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #wrapper {
+            width: 500px;
+            height: auto;
+            border: 1px solid #CCC;
+            border-radius: 5px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+            background: white;
+            text-align: center;
+            padding: 10px;
+        }
+
+        hr {
+            border-top: 1px solid #CCC;
+        }
+    </style>
+    <style>
+        #start {
+            display: none;
+        }
+
+        #start .input-group-addon {
+            min-width: 100px;
+        }
+
+    </style>
+    <style>
+        #waiting {
+            display: none;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div id="wrapper">
+
+    <div class="text">
+        <h2>Pong Breaker</h2>
+        <hr>
+        <p id="status">Enter a name</p>
+    </div>
+
+    <div id="waiting">
+        <div class="form-group">
+            <input type="button" class="form-control" value="Cancel" id="cancel">
+        </div>
+    </div>
+
+
+    <div id="start">
+        <div class="container">
+            <form>
+                <div class="input-group">
+                    <span class="input-group-addon">Name:</span>
+                    <input type="text" class="form-control" name="name" id="name" placeholder="Your Name">
+                </div>
+                <br>
+                <div class="form-group">
+                    <input type="button" class="form-control" value="Join/Create" id="submit">
+                </div>
+            </form>
+        </div>
+    </div>
+<div id="game">
+    <div id="sketch-holder">
+    </div>
+</div>
+</div>
+</body>
+
+</html>
