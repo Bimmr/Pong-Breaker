@@ -13,7 +13,6 @@ var waitingQueue = [];
 var gameCount = 1;
 
 setInterval(function () {
-    console.log(waitingQueue.length);
     if (waitingQueue.length < 2)
         return;
 
@@ -84,8 +83,14 @@ io.sockets.on('connection', function (socket) {
     socket.on('paddle update', function (data) {
         socket.paddle = data;
     });
-    socket.on('paddle hitBall', function () {
-        socket.game.ballCollideWithPaddle();
+    socket.on('paddle hitBall', function (data) {
+        var dPos = {x: data.x, y: data.y};
+        if(socket == socket.game.player2) {
+            var d = rotate(width / 2, height / 2, data.x, data.y, 180);
+            dPos.x = d[0];
+            dPos.y = d[1];
+        }
+        socket.game.ballCollideWithPaddle(dPos);
     });
 });
 
@@ -116,9 +121,9 @@ function Game(id, player1, player2) {
         this.ballVel.y += y * this.ballSpeed;
     };
 
-    this.ballCollideWithPaddle = function () {
-        this.ballPos.x = this.ballLastPos.x;
-        this.ballPos.y = this.ballLastPos.y;
+    this.ballCollideWithPaddle = function (data) {
+        this.ballPos.x = data.x;
+        this.ballPos.y = data.y;
         this.ballVel.y *= -1;
     };
 

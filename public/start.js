@@ -1,6 +1,7 @@
 var paddle;
 var otherPaddle = {};
 var ballSize = 15;
+var lastBallPos = {};
 var ballPos = {};
 var socket;
 
@@ -25,13 +26,14 @@ function setup() {
         start.show();
     });
     socket.on('game winUpdate', function (data) {
-        $("#status").text(data.player1.name+": "+data.player1.wins + " - " +data.player2.name+": "+data.player2.wins);
+        $("#status").text(data.player1.name + ": " + data.player1.wins + " - " + data.player2.name + ": " + data.player2.wins);
     });
 
     socket.on('game join', function (data) {
         waiting.hide();
         start.hide();
         game.show();
+        otherPaddle = {x: width / 2 - (paddleWidth / 2), y: height - paddleHeight - 3};
         paddle = new Paddle(width / 2 - (paddleWidth / 2), height - paddleHeight - 3);
         $("#status").text("Playing with " + data.name);
         ballPos.x = data.x;
@@ -67,36 +69,35 @@ function setup() {
 
 function draw() {
 
-    //translate(width, height);
-    //rotate(PI);
-
     background(150);
     stroke("#fff");
     line(0, height / 2, width, height / 2);
 
-    if(paddle) {
+    if (paddle) {
         paddle.update();
         paddle.draw();
         socket.emit('paddle update', {
             x: paddle.pos.x,
             y: paddle.pos.y
         });
+        lastBallPos.x = ballPos.x;
+        lastBallPos.y = ballPos.y;
 
-        if(ballPos.x + ballSize >= paddle.pos.x
-            && ballPos.x < paddle.pos.x+paddleWidth
-            && ballPos.y+ballSize >= paddle.pos.y
-            && ballPos.y <= paddle.pos.y+paddleHeight)
-            socket.emit('paddle hitBall');
+        if (ballPos.x + ballSize >= paddle.pos.x
+            && ballPos.x < paddle.pos.x + paddleWidth
+            && ballPos.y + ballSize >= paddle.pos.y
+            && ballPos.y <= paddle.pos.y + paddleHeight)
+            socket.emit('paddle hitBall', lastBallPos);
     }
     if (ballPos) {
         stroke("#717171");
         fill("#fff");
         ellipse(ballPos.x, ballPos.y, ballSize, ballSize);
     }
-    if(otherPaddle){
+    if (otherPaddle) {
         stroke("#434343");
         fill("#ff7640");
-        rect(width-otherPaddle.x-paddleWidth, height-otherPaddle.y-paddleHeight, paddleWidth, paddleHeight);
+        rect(width - otherPaddle.x - paddleWidth, height - otherPaddle.y - paddleHeight, paddleWidth, paddleHeight);
     }
 }
 
