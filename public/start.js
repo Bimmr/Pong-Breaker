@@ -17,12 +17,15 @@ function setup() {
     var game = $("#game");
     start.show();
 
-    socket = io.connect('http://localhost:3000');
+    socket = io.connect();
 
     socket.on('connect_error', function () {
         waiting.hide();
         game.hide();
         start.show();
+    });
+    socket.on('game winUpdate', function (data) {
+        $("#status").text(data.player1.name+": "+data.player1.wins + " - " +data.player2.name+": "+data.player2.wins);
     });
 
     socket.on('game join', function (data) {
@@ -40,7 +43,6 @@ function setup() {
         otherPaddle.y = data.otherPaddle.y;
         ballPos.x = data.ball.x;
         ballPos.y = data.ball.y;
-        console.log(data);
     });
 
     $("#submit").click(function () {
@@ -80,6 +82,11 @@ function draw() {
             y: paddle.pos.y
         });
 
+        if(ballPos.x + ballSize >= paddle.pos.x
+            && ballPos.x < paddle.pos.x+paddleWidth
+            && ballPos.y+ballSize >= paddle.pos.y
+            && ballPos.y <= paddle.pos.y+paddleHeight)
+            socket.emit('paddle hitBall');
     }
     if (ballPos) {
         stroke("#717171");
@@ -89,7 +96,7 @@ function draw() {
     if(otherPaddle){
         stroke("#434343");
         fill("#ff7640");
-        rect(otherPaddle.x, height-otherPaddle.y-paddleHeight, paddleWidth, paddleHeight);
+        rect(width-otherPaddle.x-paddleWidth, height-otherPaddle.y-paddleHeight, paddleWidth, paddleHeight);
     }
 }
 

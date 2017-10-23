@@ -6,7 +6,7 @@ function Paddle(x, y) {
     this.vel = createVector();
     this.pos = createVector(x, y);
     this.color = "#386def";
-    this.speed = 4;
+    this.speed = 6;
 
     this.move = function (x, y) {
         this.vel.add(x * this.speed, y * this.speed);
