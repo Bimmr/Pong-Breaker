@@ -12,6 +12,7 @@ var height = 750;
 var waitingQueue = [];
 var gameCount = 1;
 
+//Match players looking for queue
 setInterval(function () {
     if (waitingQueue.length < 2)
         return;
@@ -24,21 +25,26 @@ setInterval(function () {
     var playerTwo = waitingQueue[index];
     waitingQueue.splice(index, 1);
 
-    var name = "Game" + gameCount++;
+    var room = "Game" + gameCount++;
     var game = new Game(gameCount, playerOne, playerTwo);
 
-    playerOne.join(name);
-    playerTwo.join(name);
+    playerOne.join(room);
     playerOne.game = game;
+    playerOne.curRoom = room;
+
+    playerTwo.join(room);
     playerTwo.game = game;
+    playerTwo.curRoom = room;
+    var ball = game.ball;
+    ball.d = game.ballSize;
 
     playerOne.emit('game join', {
         name: playerTwo.playerName,
-        ball: game.ball
+        ball: ball
     });
     playerTwo.emit('game join', {
         name: playerOne.playerName,
-        ball: game.ball
+        ball: ball
     });
 
 }, 2000);
@@ -84,15 +90,43 @@ io.sockets.on('connection', function (socket) {
         socket.paddle = data;
     });
     socket.on('paddle hitBall', function (data) {
-        var dPos = {x: data.x, y: data.y};
-        if(socket == socket.game.player2) {
-            var d = rotate(width / 2, height / 2, data.x, data.y, 180);
-            dPos.x = d[0];
-            dPos.y = d[1];
+
+        if(socket !== socket.game.lastHit) {
+            var dPos = {x: data.x, y: data.y};
+            if (socket === socket.game.player2) {
+                var d = rotate(width / 2, height / 2, data.x, data.y, 180);
+                dPos.x = d[0];
+                dPos.y = d[1];
+            }
+            socket.game.ballCollideWithPaddle(dPos);
+            socket.game.lastHit = socket;
         }
-        socket.game.ballCollideWithPaddle(dPos);
+    });
+    socket.on('disconnect', function () {
+        leave(socket);
     });
 });
+
+function leave(socket) {
+    var index = waitingQueue.indexOf(socket);
+    if (index != -1)
+        waitingQueue.splice(index, 1);
+
+    if (socket.game) {
+        var w;
+        var p;
+        if (socket == socket.game.player1) {
+            p = socket.game.player2.playerName;
+            w = socket.game.player1;
+        } else {
+            p = socket.game.player1.playerName;
+            w = socket.game.player2;
+        }
+        io.to(socket.curRoom).emit('player left', {name: p});
+        w.curRoom = null;
+        w.game = null;
+    }
+}
 
 function rotate(cx, cy, x, y, angle) {
     var radians = (Math.PI / 180) * angle,
@@ -109,6 +143,8 @@ function Game(id, player1, player2) {
     this.id = id;
     this.player1 = player1;
     this.player2 = player2;
+    this.lastHit = null;
+    this.ballSize = 15;
 
     this.ballVel = {x: 0, y: 0};
     this.ballPos = {x: (500 / 2) - ballSize / 2, y: (750 / 2) - ballSize / 2};
@@ -131,6 +167,16 @@ function Game(id, player1, player2) {
     var y = Math.random() < 0.5 ? -1 : 1;
     this.moveBall(x, y);
 
+    this.resetBall = function(){
+        this.ballPos = {x: (500 / 2) - ballSize / 2, y: (750 / 2) - ballSize / 2};
+        var x = Math.random() < 0.5 ? -1 : 1;
+        var y = Math.random() < 0.5 ? -1 : 1;
+        this.ballVel.x = x * this.ballSpeed;
+        this.ballVel.y = y * this.ballSpeed;
+        this.lastHit = null;
+    };
+
+
 
     this.update = function () {
 
@@ -152,18 +198,20 @@ function Game(id, player1, player2) {
             if (this.ballPos.y >= height)
                 player2.wins += 1;
 
-            io.to('Game' + player1.game.id).emit("game winUpdate", {
+            io.to(player1.curRoom).emit("game win", {
                 player1: {
-                    name: player1.name,
+                    name: player1.playerName,
                     wins: player1.wins
                 },
                 player2: {
-                    name: player2.name,
+                    name: player2.playerName,
                     wins: player2.wins
                 }
             });
-            this.ballPos = {x: (500 / 2) - ballSize / 2, y: (750 / 2) - ballSize / 2};
+            //Reset Ball
+            this.resetBall();
         }
+
 
         this.ballLastPos.x = this.ballPos.x;
         this.ballLastPos.y = this.ballPos.y;

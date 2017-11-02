@@ -1,6 +1,5 @@
 var paddle;
 var otherPaddle = {};
-var ballSize = 15;
 var lastBallPos = {};
 var ballPos = {};
 var socket;
@@ -24,9 +23,20 @@ function setup() {
         waiting.hide();
         game.hide();
         start.show();
+        $("#status").text("Enter your name, and hit join.");
     });
-    socket.on('game winUpdate', function (data) {
+    socket.on('game win', function (data) {
         $("#status").text(data.player1.name + ": " + data.player1.wins + " - " + data.player2.name + ": " + data.player2.wins);
+    });
+    socket.on('player left', function (data) {
+        waiting.hide();
+        game.hide();
+        start.show();
+        alert(data.name + " has left the game.");
+        $("#status").text("Enter your name, and hit join.");
+
+        ballPos = undefined;
+        otherPaddle = undefined;
     });
 
     socket.on('game join', function (data) {
@@ -41,18 +51,23 @@ function setup() {
     });
 
     socket.on('game update', function (data) {
-        otherPaddle.x = data.otherPaddle.x;
-        otherPaddle.y = data.otherPaddle.y;
+        if(data.otherPaddle) {
+            otherPaddle.x = data.otherPaddle.x;
+            otherPaddle.y = data.otherPaddle.y;
+        }
         ballPos.x = data.ball.x;
         ballPos.y = data.ball.y;
+        ballPos.d = data.ball.d;
     });
 
     $("#submit").click(function () {
-        name = $("#name").val();
-
-        socket.emit('queue join', {
-            name: name
-        });
+        var name = $("#name").val();
+        if(name.length<4)
+        {
+            alert("Name must be longer than 4 characters");
+            return;
+        }
+        socket.emit('queue join', {name: name});
 
         start.hide();
         waiting.show();
@@ -83,16 +98,16 @@ function draw() {
         lastBallPos.x = ballPos.x;
         lastBallPos.y = ballPos.y;
 
-        if (ballPos.x + ballSize >= paddle.pos.x
+        if (ballPos.x + ballPos.d >= paddle.pos.x
             && ballPos.x < paddle.pos.x + paddleWidth
-            && ballPos.y + ballSize >= paddle.pos.y
+            && ballPos.y + ballPos.d >= paddle.pos.y
             && ballPos.y <= paddle.pos.y + paddleHeight)
             socket.emit('paddle hitBall', lastBallPos);
     }
     if (ballPos) {
         stroke("#717171");
         fill("#fff");
-        ellipse(ballPos.x, ballPos.y, ballSize, ballSize);
+        ellipse(ballPos.x, ballPos.y, ballPos.d, ballPos.d);
     }
     if (otherPaddle) {
         stroke("#434343");

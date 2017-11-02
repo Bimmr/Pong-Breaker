@@ -4,57 +4,12 @@
     <script src="Library/jquery/jquery-ui.min.js"></script>
     <script src="https://cdn.socket.io/socket.io-1.7.3.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
 
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="Library/p5/p5.min.js"></script>
     <script src="start.js"></script>
     <script src="Paddle.js"></script>
-    <style>
-
-        body {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #wrapper{
-            width: 550px;
-            height: auto;
-            border: 1px solid #CCC;
-            border-radius: 5px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-            background: white;
-            text-align: center;
-            padding: 10px;
-        }
-        #wrapper:hover{
-		    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.75);
-		}
-
-        hr {
-            border-top: 1px solid #CCC;
-        }
-    </style>
-    <style>
-        #start {
-            display: none;
-        }
-
-        #start .input-group-addon {
-            min-width: 100px;
-        }
-
-        #waiting, #game {
-            display: none;
-        }
-        @media (min-width: 768px) {
-            .container {
-                 width: auto;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -64,7 +19,7 @@
     <div class="text">
         <h2>Pong Breaker</h2>
         <hr>
-        <p id="status">Enter a name</p>
+        <p id="status">Enter your name, and hit join.</p>
     </div>
 
     <div id="waiting">
@@ -83,15 +38,15 @@
                 </div>
                 <br>
                 <div class="form-group">
-                    <input type="button" class="form-control" value="Join/Create" id="submit">
+                    <input type="button" class="form-control" value="Join" id="submit">
                 </div>
             </form>
         </div>
     </div>
-<div id="game">
-    <div id="sketch-holder">
+    <div id="game">
+        <div id="sketch-holder">
+        </div>
     </div>
-</div>
 </div>
 </body>
 

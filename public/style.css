@@ -1,0 +1,95 @@
+
+body {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #D3D3D3;
+}
+
+#wrapper {
+    width: 550px;
+    height: auto;
+    border: 1px solid #CCC;
+    border-radius: 5px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    background: white;
+    text-align: center;
+    padding: 10px;
+}
+
+#wrapper:hover {
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.75);
+}
+
+hr {
+    border-top: 1px solid #CCC;
+}
+#start {
+    display: none;
+}
+
+#start .input-group-addon {
+    min-width: 100px;
+}
+#private{
+    background-color: #dadada;
+}
+
+#waiting, #game {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .container {
+        width: auto;
+    }
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {display:none;}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
