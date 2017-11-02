@@ -35,7 +35,7 @@ setInterval(function () {
     playerTwo.join(room);
     playerTwo.game = game;
     playerTwo.curRoom = room;
-    var ball = game.ball;
+    var ball = game.ballPos;
     ball.d = game.ballSize;
 
     playerOne.emit('game join', {
@@ -56,15 +56,19 @@ setInterval(function () {
         if (s.game) {
             if (!updatedGames[s.game.player1.id]) {
                 s.game.update();
+
+                var ball = s.game.ballPos;
+                ball.d = s.game.ballSize;
+
                 s.game.player1.emit('game update', {
                     otherPaddle: s.game.player2.paddle,
-                    ball: s.game.ballPos
+                    ball: ball
                 });
                 var d = rotate(width / 2, height / 2, s.game.ballPos.x, s.game.ballPos.y, 180);
 
                 s.game.player2.emit('game update', {
                     otherPaddle: s.game.player1.paddle,
-                    ball: {x: d[0], y: d[1]}
+                    ball: {x: d[0], y: d[1], d: ball.d}
                 });
                 updatedGames[s.game.player1.id] = true;
             }
@@ -91,7 +95,7 @@ io.sockets.on('connection', function (socket) {
     });
     socket.on('paddle hitBall', function (data) {
 
-        if(socket !== socket.game.lastHit) {
+        if (socket !== socket.game.lastHit) {
             var dPos = {x: data.x, y: data.y};
             if (socket === socket.game.player2) {
                 var d = rotate(width / 2, height / 2, data.x, data.y, 180);
@@ -137,7 +141,6 @@ function rotate(cx, cy, x, y, angle) {
     return [nx, ny];
 }
 
-var ballSize = 15;
 
 function Game(id, player1, player2) {
     this.id = id;
@@ -147,7 +150,7 @@ function Game(id, player1, player2) {
     this.ballSize = 15;
 
     this.ballVel = {x: 0, y: 0};
-    this.ballPos = {x: (500 / 2) - ballSize / 2, y: (750 / 2) - ballSize / 2};
+    this.ballPos = {x: (500 / 2) - this.ballSize / 2, y: (750 / 2) - this.ballSize / 2};
     this.ballLastPos = {x: 0, y: 0};
     this.ballSpeed = 5;
 
@@ -167,15 +170,15 @@ function Game(id, player1, player2) {
     var y = Math.random() < 0.5 ? -1 : 1;
     this.moveBall(x, y);
 
-    this.resetBall = function(){
-        this.ballPos = {x: (500 / 2) - ballSize / 2, y: (750 / 2) - ballSize / 2};
+    this.resetBall = function () {
+        this.ballPos = {x: (500 / 2) - this.ballSize / 2, y: (750 / 2) - this.ballSize / 2};
         var x = Math.random() < 0.5 ? -1 : 1;
         var y = Math.random() < 0.5 ? -1 : 1;
         this.ballVel.x = x * this.ballSpeed;
         this.ballVel.y = y * this.ballSpeed;
         this.lastHit = null;
+        this.ballSize = 15;
     };
-
 
 
     this.update = function () {
@@ -188,7 +191,7 @@ function Game(id, player1, player2) {
             this.moveBall(1, 0);
 
         //Check for Right collision
-        if (this.ballPos.x + ballSize >= width)
+        if (this.ballPos.x + this.ballSize >= width)
             this.moveBall(-1, 0);
 
 

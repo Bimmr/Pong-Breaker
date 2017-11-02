@@ -104,6 +104,7 @@ function draw() {
             && ballPos.y <= paddle.pos.y + paddleHeight)
             socket.emit('paddle hitBall', lastBallPos);
     }
+    console.log(ballPos);
     if (ballPos) {
         stroke("#717171");
         fill("#fff");
